@@ -1,6 +1,10 @@
+/////////////////////////////////////
+//APB Master module (Parameterized)//
+/////////////////////////////////////
+
 `default_nettype none
 
-module apb_master	#(parameter DATA_WIDTH = 8, parameter ADDR_WIDTH = 8)(
+module apb_master #(parameter DATA_WIDTH = 8, parameter ADDR_WIDTH = 8)(
 	input wire PCLK,			// From Clock source
 	input wire PRESETn,			// From System bus reset (active low)
 	input wire transfer,		// From Bridge to APB Master
@@ -79,71 +83,57 @@ begin
 end
 
 // output Logic
-always@(posedge PCLK)
-begin
+always@(*) begin
 	case(PS)
 	IDLE: begin
-		PRDATA_OUT <= PRDATA_OUT;
-		if(transfer)
-		begin
-			PWRITE <= read_write;
-			PENABLE <= 0;
-			if(read_write)
-			begin
-				PSEL1 <= ~APB_WADDR[ADDR_WIDTH];
-				PSEL2 <= APB_WADDR[ADDR_WIDTH];
-				PWDATA <= APB_WDATA;
-				PADDR <= APB_WADDR[ADDR_WIDTH-1:0];
-			end
-			else
-			begin
-				PSEL1 <= ~APB_RADDR[ADDR_WIDTH];
-				PSEL2 <= APB_RADDR[ADDR_WIDTH];
-				PADDR <= APB_RADDR[ADDR_WIDTH-1:0];
-				PWDATA <= PWDATA;
-			end
-		end
-		else begin
-			PSEL1 <= 0;
-			PSEL2 <= 0;
-			PWDATA <= 0;
-			PADDR <= 0;
-			PWRITE <= 0;
-			PENABLE <= 0;
-		end
+		PSEL1 = 0;
+		PSEL2 = 0;
+		PWDATA = 0;
+		PADDR = 0;
+		PWRITE = 0;
+		PENABLE = 0;
 	end
 	SETUP: begin
-		PWRITE <= read_write;
-		PENABLE <= 1;
-		PADDR <= PADDR;
-		PWDATA <= PWDATA;
-		PSEL1 <= PSEL1;
-		PSEL2 <= PSEL2;
-		if(PREADY && !read_write && !PSLVERR)
-		  PRDATA_OUT <= PRDATA;
+		PWRITE = read_write;
+		PENABLE = 0;
+		PRDATA_OUT = PRDATA_OUT;
+		if(read_write)
+		begin
+			PSEL1 = ~APB_WADDR[ADDR_WIDTH];
+			PSEL2 = APB_WADDR[ADDR_WIDTH];
+			PWDATA = APB_WDATA;
+			PADDR = APB_WADDR[ADDR_WIDTH-1:0];
+		end
 		else
-		  PRDATA_OUT <= PRDATA_OUT;
+		begin
+			PSEL1 = ~APB_RADDR[ADDR_WIDTH];
+			PSEL2 = APB_RADDR[ADDR_WIDTH];
+			PADDR = APB_RADDR[ADDR_WIDTH-1:0];
+			PWDATA = PWDATA;
+		end
 	end
 	ACCESS: begin
-		PWRITE <= PWRITE;
-		PENABLE <= PENABLE;
-		PADDR <= PADDR; 
-		PWDATA <= PWDATA;
-		PSEL1 <= PSEL1;
-		PSEL2 <= PSEL2;
-		PRDATA_OUT <= PRDATA_OUT;
+		PWRITE = read_write;
+		PENABLE = 1;
+		PADDR = PADDR;
+		PWDATA = PWDATA;
+		PSEL1 = PSEL1;
+		PSEL2 = PSEL2;
+		if(PREADY && !read_write && !PSLVERR)
+		  PRDATA_OUT = PRDATA;
+		else
+		  PRDATA_OUT = PRDATA_OUT;
 	end
 	default: begin
-		PSEL1 <= 0;
-		PSEL2 <= 0;
-		PWDATA <= 0;
-		PADDR <= 0;
-		PWRITE <= 0;
-		PENABLE <= 0;
-		PRDATA_OUT <= 0;
+		PSEL1 = 0;
+		PSEL2 = 0;
+		PWDATA = 0;
+		PADDR = 0;
+		PWRITE = 0;
+		PENABLE = 0;
+		PRDATA_OUT = 0;
 	end
 	endcase
 end
 
 endmodule
-
