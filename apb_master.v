@@ -1,26 +1,27 @@
-/////////////////////////////////////
-//APB Master module (Parameterized)//
-/////////////////////////////////////
+////////////////////////////////////
+//APB_Master module (Parameterized)//
+////////////////////////////////////
+`include "inc.h"
 
 `default_nettype none
 
-module apb_master #(parameter DATA_WIDTH = 8, parameter ADDR_WIDTH = 8)(
+module apb_master(
 	input wire PCLK,			// From Clock source
 	input wire PRESETn,			// From System bus reset (active low)
 	input wire transfer,		// From Bridge to APB Master
 	input wire read_write,		// From Bridge to APB Master
-	input wire [ADDR_WIDTH:0] APB_WADDR,	// 9 bit address - (MSB-slave sel) From Bridge to APB Master
-	input wire [DATA_WIDTH-1:0] APB_WDATA,	// From Bridge to APB Master
-	input wire [ADDR_WIDTH:0] APB_RADDR,	// 9 bit address - (MSB-slave sel) From Bridge to APB Master
+	input wire [`ADDR_WIDTH:0] APB_WADDR,	// 9 bit address - (MSB-slave sel) From Bridge to APB Master
+	input wire [`DATA_WIDTH-1:0] APB_WDATA,	// From Bridge to APB Master
+	input wire [`ADDR_WIDTH:0] APB_RADDR,	// 9 bit address - (MSB-slave sel) From Bridge to APB Master
 	input wire PREADY,			// From Slave to APB Master
-	input wire [DATA_WIDTH-1:0] PRDATA,		// From Slave to APB Master
+	input wire [`DATA_WIDTH-1:0] PRDATA,		// From Slave to APB Master
 	input wire PSLVERR,			// Error signal from slave to APB Master
 	output reg PWRITE,			
 	output reg PENABLE,
 	output reg PSEL1, PSEL2,
-	output reg [ADDR_WIDTH-1:0] PADDR,
-	output reg [DATA_WIDTH-1:0] PWDATA,
-	output reg [DATA_WIDTH-1:0] PRDATA_OUT
+	output reg [`ADDR_WIDTH-1:0] PADDR,
+	output reg [`DATA_WIDTH-1:0] PWDATA,
+	output reg [`DATA_WIDTH-1:0] PRDATA_OUT
 );
 
 // State parameterization
@@ -99,16 +100,16 @@ always@(*) begin
 		PRDATA_OUT = PRDATA_OUT;
 		if(read_write)
 		begin
-			PSEL1 = ~APB_WADDR[ADDR_WIDTH];
-			PSEL2 = APB_WADDR[ADDR_WIDTH];
+			PSEL1 = ~APB_WADDR[`ADDR_WIDTH];
+			PSEL2 = APB_WADDR[`ADDR_WIDTH];
 			PWDATA = APB_WDATA;
-			PADDR = APB_WADDR[ADDR_WIDTH-1:0];
+			PADDR = APB_WADDR[`ADDR_WIDTH-1:0];
 		end
 		else
 		begin
-			PSEL1 = ~APB_RADDR[ADDR_WIDTH];
-			PSEL2 = APB_RADDR[ADDR_WIDTH];
-			PADDR = APB_RADDR[ADDR_WIDTH-1:0];
+			PSEL1 = ~APB_RADDR[`ADDR_WIDTH];
+			PSEL2 = APB_RADDR[`ADDR_WIDTH];
+			PADDR = APB_RADDR[`ADDR_WIDTH-1:0];
 			PWDATA = PWDATA;
 		end
 	end
